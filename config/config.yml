@@ -1,0 +1,12 @@
+app:
+  name: go_community
+  port: 8080
+
+front:
+  url: http://localhost:5173
+
+database:
+  dsn: root:1234@tcp(127.0.0.1:3306)/go_community?parseTime=true
+  MaxIdleConns: 10
+  MaxOpenConns: 100
+  
