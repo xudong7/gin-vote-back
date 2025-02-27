@@ -47,6 +47,11 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	// 之后可以在这里添加一个默认的管理员账号
+	if user.Username == "admin" {
+		user.Role = "admin"
+	}
+
 	// Create the user
 	if err := global.Db.Create(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -58,6 +63,7 @@ func Register(c *gin.Context) {
 	// return the token
 	c.JSON(http.StatusOK, gin.H{
 		"token": token,
+		"role":  user.Role,
 	})
 }
 
@@ -102,8 +108,11 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	role := user.Role
+
 	// return the token
 	c.JSON(http.StatusOK, gin.H{
 		"token": token,
+		"role":  role,
 	})
 }

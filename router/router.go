@@ -33,16 +33,14 @@ func SetupRouter() *gin.Engine {
 	}
 
 	api := r.Group("/api")
-	{
-		api.POST("/forms", controllers.CreateForms)
-		api.GET("/forms", controllers.GetForms)
-		api.GET("/forms/:id", controllers.GetFormsById)
-	}
 	api.Use(middlewares.AuthMiddleWare())
 	{
 		api.POST("/articles", controllers.CreateArticles)
 		api.GET("/articles", controllers.GetArticles)
 		api.GET("/articles/:id", controllers.GetArticlesById)
+		api.POST("/forms", controllers.CreateForms)
+		api.GET("/forms", controllers.GetForms)
+		api.GET("/forms/:id", controllers.GetFormsById)
 	}
 
 	return r
