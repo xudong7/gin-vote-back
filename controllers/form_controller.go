@@ -97,3 +97,64 @@ func GetFormsById(c *gin.Context) {
 
 	c.JSON(http.StatusOK, form)
 }
+
+func DeleteFormsById(c *gin.Context) {
+	var form models.Form
+	id := c.Param("id")
+
+	// 软删除
+
+	if err := global.Db.Where("parent_id = ?", id).Delete(&models.Option{}).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if err := global.Db.First(&form, id).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if err := global.Db.Delete(&form).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, form)
+}
+
+func UpdateFormsById(c *gin.Context) {
+	var form models.Form
+	id := c.Param("id")
+
+	if err := c.ShouldBindJSON(&form); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if err := global.Db.Model(&form).Where("id = ?", id).Updates(&form).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// 对应的option的votes也要更新
+	for i := range form.OptionList {
+		if err := global.Db.Model(&form.OptionList[i]).Where("id = ?", form.OptionList[i].ID).Updates(&form.OptionList[i]).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, form)
+}

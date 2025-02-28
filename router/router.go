@@ -41,6 +41,10 @@ func SetupRouter() *gin.Engine {
 		api.POST("/forms", controllers.CreateForms)
 		api.GET("/forms", controllers.GetForms)
 		api.GET("/forms/:id", controllers.GetFormsById)
+		api.DELETE("/forms/:id", controllers.DeleteFormsById)
+		api.PUT("/forms/:id", controllers.UpdateFormsById)
+		api.GET("/users", controllers.GetUsers)
+		api.GET("/users/:id", controllers.GetUserById)
 	}
 
 	return r
