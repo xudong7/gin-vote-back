@@ -62,8 +62,9 @@ func Register(c *gin.Context) {
 
 	// return the token
 	c.JSON(http.StatusOK, gin.H{
-		"token": token,
-		"role":  user.Role,
+		"token":  token,
+		"role":   user.Role,
+		"userId": user.ID,
 	})
 }
 
@@ -112,7 +113,8 @@ func Login(c *gin.Context) {
 
 	// return the token
 	c.JSON(http.StatusOK, gin.H{
-		"token": token,
-		"role":  role,
+		"token":  token,
+		"role":   role,
+		"userId": user.ID,
 	})
 }

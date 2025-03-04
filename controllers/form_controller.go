@@ -129,16 +129,37 @@ func DeleteFormsById(c *gin.Context) {
 }
 
 func UpdateFormsById(c *gin.Context) {
+	// 1. 得到表单信息
 	var form models.Form
-	id := c.Param("id")
-
 	if err := c.ShouldBindJSON(&form); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
+	id := form.ID
 
+	// 2. 得到用户信息
+	userId := c.Param("id")
+	var user models.User
+	if err := global.Db.First(&user, userId).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// 3. 判断formList是否包含该表单ID
+	if !contains(user.FormList, id) {
+		user.FormList = append(user.FormList, id)
+		// Use Save instead of Updates for JSON fields
+		if err := global.Db.Save(&user).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "投票失败"})
+			return
+		}
+	}
+
+	// Update form information
 	if err := global.Db.Model(&form).Where("id = ?", id).Updates(&form).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -146,7 +167,7 @@ func UpdateFormsById(c *gin.Context) {
 		return
 	}
 
-	// 对应的option的votes也要更新
+	// Update options
 	for i := range form.OptionList {
 		if err := global.Db.Model(&form.OptionList[i]).Where("id = ?", form.OptionList[i].ID).Updates(&form.OptionList[i]).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -157,4 +178,14 @@ func UpdateFormsById(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, form)
+}
+
+// 辅助函数：检查元素是否存在
+func contains(slice []uint, item uint) bool {
+	for _, v := range slice {
+		if v == item {
+			return true
+		}
+	}
+	return false
 }
